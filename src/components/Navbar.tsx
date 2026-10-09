@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/useAuth';
 import { useTheme } from '../context/useTheme';
-import { BookOpen, Search, Sun, Moon, LogOut, ChevronRight } from 'lucide-react';
+import { BookOpen, Search, Sun, Moon, LogOut, ChevronRight, Smartphone } from 'lucide-react';
 import type { Subject, Chapter, Topic, ViewMode } from '../types';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 interface NavbarProps {
   currentView: ViewMode;
@@ -27,6 +32,43 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+      setIsInstalled(true);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xs border-b border-neutral-200 dark:border-neutral-800 transition-colors">
@@ -101,6 +143,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right: Search, Theme Toggle, User, Sign Out */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Install App button (PWA) */}
+          {!isInstalled && installPrompt && (
+            <button
+              type="button"
+              onClick={handleInstallClick}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-white text-xs font-medium transition-colors cursor-pointer shadow-xs"
+              title="Install MSBTE Notes on your phone"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Install App</span>
+            </button>
+          )}
+
           {/* Search Button */}
           <button
             type="button"

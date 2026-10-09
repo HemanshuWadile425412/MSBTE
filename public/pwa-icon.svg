@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0a0a0a" />
+  <g transform="translate(96, 96)">
+    <!-- Spine binding -->
+    <rect x="20" y="24" width="280" height="272" rx="20" fill="#171717" stroke="#262626" stroke-width="8" />
+    <path d="M72 24 L72 296" stroke="#404040" stroke-width="6" stroke-dasharray="12 12" />
+    <!-- Book pages -->
+    <path d="M104 80 L260 80" stroke="#fafafa" stroke-width="12" stroke-linecap="round" />
+    <path d="M104 128 L260 128" stroke="#a3a3a3" stroke-width="10" stroke-linecap="round" />
+    <path d="M104 176 L220 176" stroke="#a3a3a3" stroke-width="10" stroke-linecap="round" />
+    <path d="M104 224 L240 224" stroke="#a3a3a3" stroke-width="10" stroke-linecap="round" />
+    <!-- Bookmark ribbon -->
+    <path d="M180 24 L180 110 L196 96 L212 110 L212 24 Z" fill="#ef4444" />
+  </g>
+</svg>
