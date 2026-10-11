@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Semester 5 Editable Result Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef0f3;color:#222;font-family:Arial,Helvetica,sans-serif}
+.topbar{position:sticky;top:0;z-index:10;background:#202124;color:#fff;padding:11px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+button{border:0;border-radius:7px;padding:10px 15px;font-weight:700;cursor:pointer}
+#save{background:#1a73e8;color:#fff}.secondary{background:#eee;color:#222}.danger{background:#f1d2d2}
+.container{max-width:1250px;margin:18px auto;padding:0 10px}
+.sheet{background:#fff;border:1px solid #999;box-shadow:0 2px 14px #c9c9c9;padding:15px}
+.header{text-align:center;border-bottom:2px solid #222;padding:5px 0 12px}
+.header .board{font-size:13px}.header h1{font-size:26px;margin:5px 0}.header h2{font-size:18px;margin:0}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.field{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700}
+.field input,.field select{flex:1;min-width:0;border:1px solid #aaa;padding:6px;border-radius:3px;font:inherit;background:#fff}
+.note{font-size:12px;margin:8px 0;color:#8b2d2d;font-weight:700}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:1050px}
+th,td{border:1px solid #333;padding:5px;text-align:center;vertical-align:middle}
+th{background:#f4f4f4;font-weight:700}
+.subject{text-align:left;font-weight:700;min-width:190px}
+.subject input{width:100%;border:0;background:transparent;font:inherit;font-weight:700}
+.smallinput{width:48px;text-align:center;padding:4px;border:1px solid #bbb;border-radius:3px}
+.obt{background:#fffdf0}
+.maxcell{background:#f7f7f7;color:#555}
+.group{background:#fafafa;text-align:left;font-weight:700}
+tfoot td{font-weight:700;background:#f7f7f7}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);margin-top:14px;border:1px solid #222}
+.summary>div{padding:11px;text-align:center;border-right:1px solid #222}
+.summary>div:last-child{border-right:0}
+.summary b{display:block;font-size:10px}.summary span{display:block;font-size:20px;font-weight:700;margin-top:4px}
+.result{text-align:center;font-weight:800;margin:13px 0;font-size:16px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.controls label{font-size:12px;font-weight:700}
+.help{font-size:11px;color:#555;line-height:1.5;margin-top:14px}
+.status{padding:7px;border-radius:5px;background:#f5f5f5}
+#saveStatus{font-size:12px;font-weight:700;display:none;margin-left:8px;padding:6px 12px;border-radius:5px}
+@media(max-width:700px){
+ .meta{grid-template-columns:1fr}
+ .sheet{padding:8px}
+ .header h1{font-size:20px}
+ .summary{grid-template-columns:1fr 1fr}
+ .summary>div{border-bottom:1px solid #222}
+}
+@media print{
+ body{background:#fff}.topbar{display:none}.container{margin:0;padding:0}.sheet{box-shadow:none;border:0}
+ input,select{border:0!important}.help{display:none}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+<button class="secondary" id="backBtn">← Back to Workspace</button>
+<button id="save">Save Changes</button>
+<button class="secondary" id="reset">Reset</button>
+<button class="secondary" onclick="window.print()">Print</button>
+<span id="saveStatus"></span>
+</div>
+
+<div class="container">
+<div class="sheet">
+
+<div class="header">
+  <div class="board">MAHARASHTRA STATE BOARD OF TECHNICAL EDUCATION</div>
+  <h1>STATEMENT OF MARKS</h1>
+  <h2>SEMESTER : FIFTH</h2>
+</div>
+
+<div class="meta">
+  <div class="field">MR. / MS. <input data-key="name" value="WADILE HEMANSHU PRAVIN"></div>
+  <div class="field">ENROLLMENT NO. <input data-key="enrollment" value="24610240157"></div>
+  <div class="field">EXAMINATION <input data-key="exam" value="SUMMER 2026"></div>
+  <div class="field">SEAT NO. <input data-key="seat" value=""></div>
+  <div class="field">COURSE <input data-key="course" value="Diploma In Computer Engineering"></div>
+  <div class="field">SEMESTER <input data-key="semester" value="FIFTH"></div>
+</div>
+
+<div class="note">Personal semester-5 marks calculator — edit the obtained marks below. Maximum marks come from the curriculum.</div>
+
+<div class="controls">
+  <label>Elective:
+    <select id="elective">
+      <option value="ACN">Advance Computer Network</option>
+      <option value="CLC">Cloud Computing</option>
+      <option value="DAN">Data Analytics</option>
+    </select>
+  </label>
+</div>
+
+<div class="table-wrap">
+<table id="marks">
+<thead>
+<tr>
+<th rowspan="2">Sr No</th>
+<th rowspan="2">Course Title</th>
+<th rowspan="2">Code</th>
+<th colspan="3">Theory</th>
+<th colspan="6">Based on LL & TL / Practical</th>
+<th rowspan="2">SLA</th>
+<th rowspan="2">Credits</th>
+<th rowspan="2">Total Max</th>
+<th rowspan="2">Total Obt.</th>
+</tr>
+<tr>
+<th>FA-TH<br>Max</th><th>FA-TH<br>Obt</th><th>SA-TH<br>Max</th>
+<th>SA-TH<br>Obt</th><th>FA-PR<br>Max</th><th>FA-PR<br>Obt</th>
+<th>SA-PR<br>Max</th><th>SA-PR<br>Obt</th><th>SLA<br>Max</th><th>SLA<br>Obt</th>
+</tr>
+</thead>
+<tbody>
+<tr data-code="OSY" data-max="175">
+<td>1</td><td class="subject"><input value="OPERATING SYSTEM"></td><td>315319</td>
+<td class="maxcell">30</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">70</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td>3</td><td class="maxcell">175</td><td class="rowObt">0</td>
+</tr>
+<tr data-code="STE" data-max="175">
+<td>2</td><td class="subject"><input value="SOFTWARE ENGINEERING"></td><td>315323</td>
+<td class="maxcell">30</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">70</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td>3</td><td class="maxcell">175</td><td class="rowObt">0</td>
+</tr>
+<tr data-code="ENDS" data-max="75">
+<td>3</td><td class="subject"><input value="ENTREPRENEURSHIP DEVELOPMENT AND STARTUPS"></td><td>315002</td>
+<td class="maxcell">-</td><td>-</td>
+<td class="maxcell">-</td><td>-</td>
+<td class="maxcell">50</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">-</td><td>-</td>
+<td>1</td><td class="maxcell">75</td><td class="rowObt">0</td>
+</tr>
+<tr data-code="SPI" data-max="75">
+<td>4</td><td class="subject"><input value="SEMINAR AND PROJECT INITIATION COURSE"></td><td>315003</td>
+<td class="maxcell">-</td><td>-</td>
+<td class="maxcell">-</td><td>-</td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td>1</td><td class="maxcell">75</td><td class="rowObt">0</td>
+</tr>
+<tr data-code="ITR" data-max="200">
+<td>5</td><td class="subject"><input value="INTERNSHIP (12 WEEKS)"></td><td>315004</td>
+<td class="maxcell">-</td><td>-</td>
+<td class="maxcell">-</td><td>-</td>
+<td class="maxcell">100</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">100</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">-</td><td>-</td>
+<td>10</td><td class="maxcell">200</td><td class="rowObt">0</td>
+</tr>
+<tr data-code="ELEC" data-max="150">
+<td>6</td><td class="subject"><input id="electiveName" value="ADVANCE COMPUTER NETWORK"></td><td id="electiveCode">315321</td>
+<td class="maxcell">30</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">70</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">25</td><td><input class="smallinput obt" value="0"></td>
+<td class="maxcell">-</td><td>-</td>
+<td>2</td><td class="maxcell">150</td><td class="rowObt">0</td>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+<td colspan="13">TOTAL</td>
+<td id="creditTotal">20</td>
+<td id="maxTotal">850</td>
+<td id="obtTotal">0</td>
+</tr>
+</tfoot>
+</table>
+</div>
+
+<div class="summary">
+<div><b>TOTAL MAXIMUM</b><span id="sumMax">850</span></div>
+<div><b>TOTAL OBTAINED</b><span id="sumObt">0</span></div>
+<div><b>PERCENTAGE</b><span id="pct">0.00%</span></div>
+<div><b>TOTAL CREDITS</b><span>20</span></div>
+<div><b>CLASS</b><span id="class">—</span></div>
+</div>
+
+<div class="result status" id="result">Enter your obtained marks to calculate the semester result.</div>
+
+<div class="meta">
+  <div class="field">RESULT DATE <input data-key="date" value=""></div>
+  <div class="field">STATUS <input data-key="status" value="PASS / FAIL CALCULATED"></div>
+</div>
+
+<div class="help">
+<b>How it works:</b> The maximum marks and subject names/codes are taken from the Semester 5 curriculum shown in your screenshot. You enter/edit the marks you expect or receive in each assessment head. The website calculates each subject total, semester total, percentage and class. The elective selector changes the elective name/code while keeping its 150-mark structure.
+<br><b>Important:</b> This is a personal calculator/editable copy and does not modify MSBTE's official result or academic records.
+</div>
+
+</div>
+</div>
+
+<script>
+const electiveData={
+ ACN:{name:"ADVANCE COMPUTER NETWORK",code:"315321"},
+ CLC:{name:"CLOUD COMPUTING",code:"315325"},
+ DAN:{name:"DATA ANALYTICS",code:"315326"}
+};
+
+const SUPABASE_URL = "https://ehrmhjpsxwyqsebxdsyh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_YQNJ04dBGeXtSfB_ngVBDA_gG-H34oq";
+let sbClient = null;
+try {
+  if (window.supabase) {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn("Supabase init error:", e);
+}
+
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+
+function rowTotal(row){
+ let total=0;
+ const cells=[...row.children];
+ cells.forEach((cell,i)=>{
+   const input=cell.querySelector(".obt");
+   if(input) total += num(input.value);
+ });
+ row.querySelector(".rowObt").textContent=total;
+ return total;
+}
+
+function recalc(){
+ let max=0,obt=0;
+ document.querySelectorAll("#marks tbody tr").forEach(row=>{
+   max += num(row.dataset.max);
+   obt += rowTotal(row);
+ });
+ const pct=max ? obt/max*100 : 0;
+ document.getElementById("maxTotal").textContent=max;
+ document.getElementById("obtTotal").textContent=obt;
+ document.getElementById("sumMax").textContent=max;
+ document.getElementById("sumObt").textContent=obt;
+ document.getElementById("pct").textContent=pct.toFixed(2)+"%";
+
+ let cls="FAIL";
+ if(pct>=75) cls="FIRST CLASS WITH DISTINCTION";
+ else if(pct>=60) cls="FIRST CLASS";
+ else if(pct>=50) cls="SECOND CLASS";
+ else if(pct>=40) cls="PASS";
+ document.getElementById("class").textContent=cls;
+ document.getElementById("result").textContent =
+   pct>=40 ? cls : "FAIL — Check individual passing heads as per MSBTE rules.";
+}
+
+document.querySelectorAll(".obt").forEach(x=>x.addEventListener("input",()=>{
+  recalc();
+  saveLocal();
+}));
+
+document.querySelectorAll("[data-key]").forEach(x=>x.addEventListener("input",()=>{
+  saveLocal();
+}));
+
+document.getElementById("elective").addEventListener("change",e=>{
+ const d=electiveData[e.target.value];
+ document.getElementById("electiveName").value=d.name;
+ document.getElementById("electiveCode").textContent=d.code;
+ recalc();
+ saveLocal();
+});
+
+function collect(){
+ return {
+  meta:Object.fromEntries([...document.querySelectorAll("[data-key]")].map(x=>[x.dataset.key,x.value])),
+  elective:document.getElementById("elective").value,
+  marks:[...document.querySelectorAll("#marks tbody tr")].map(row=>[...row.querySelectorAll("input")].map(x=>x.value)),
+  electiveName:document.getElementById("electiveName").value,
+  totalMax:document.getElementById("sumMax").textContent,
+  totalObt:document.getElementById("sumObt").textContent,
+  percentage:document.getElementById("pct").textContent,
+  class:document.getElementById("class").textContent
+ };
+}
+
+function saveLocal(){
+ localStorage.setItem("semester5EditableResult",JSON.stringify(collect()));
+}
+
+function applyData(d){
+ if(!d) { recalc(); return; }
+ if(d.meta) document.querySelectorAll("[data-key]").forEach(x=>{if(d.meta[x.dataset.key]!==undefined)x.value=d.meta[x.dataset.key]});
+ if(d.elective) document.getElementById("elective").value=d.elective;
+ if(d.marks){
+   const rows=[...document.querySelectorAll("#marks tbody tr")];
+   d.marks.forEach((vals,r)=>{
+     if(!rows[r])return;
+     const inputs=[...rows[r].querySelectorAll("input")];
+     vals.forEach((v,i)=>{if(inputs[i])inputs[i].value=v});
+   });
+ }
+ if(d.electiveName) document.getElementById("electiveName").value=d.electiveName;
+ const ed=electiveData[document.getElementById("elective").value];
+ if(ed) document.getElementById("electiveCode").textContent=ed.code;
+ recalc();
+}
+
+function loadLocal(){
+ const raw=localStorage.getItem("semester5EditableResult");
+ if(!raw){recalc();return}
+ try {
+   applyData(JSON.parse(raw));
+ } catch(e) {
+   recalc();
+ }
+}
+
+function showStatus(text, isSuccess) {
+  const el = document.getElementById("saveStatus");
+  if (!el) return;
+  el.textContent = text;
+  el.style.display = "inline-block";
+  el.style.color = isSuccess ? "#fff" : "#fff";
+  el.style.background = isSuccess ? "#137333" : "#c5221f";
+  setTimeout(() => {
+    el.style.display = "none";
+  }, 4000);
+}
+
+// Window messaging for React parent frame
+window.addEventListener("message", (e) => {
+  if (!e.data || typeof e.data !== "object") return;
+  if (e.data.type === "INIT_RESULT_DATA") {
+    if (e.data.payload && Object.keys(e.data.payload).length > 0) {
+      applyData(e.data.payload);
+      saveLocal();
+    }
+  } else if (e.data.type === "SAVE_RESULT_SUCCESS") {
+    showStatus("✓ Saved to Supabase", true);
+  } else if (e.data.type === "SAVE_RESULT_ERROR") {
+    showStatus("Error saving: " + (e.data.error || "Failed"), false);
+  }
+});
+
+// Load data on startup
+async function loadResultData() {
+  // If embedded in parent frame, signal ready
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "CALCULATOR_READY" }, "*");
+  }
+
+  // Also check direct Supabase
+  try {
+    if (sbClient) {
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (session && session.user) {
+        const { data, error } = await sbClient
+          .from("predicted_results")
+          .select("result_data")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (data && data.result_data && Object.keys(data.result_data).length > 0) {
+          applyData(data.result_data);
+          saveLocal();
+          return;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Direct Supabase load error:", err);
+  }
+
+  // Fallback to local storage
+  loadLocal();
+}
+
+async function handleSave() {
+  const payload = collect();
+  saveLocal();
+  showStatus("Saving...", true);
+
+  let notifiedParent = false;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "SAVE_RESULT_DATA", payload }, "*");
+    notifiedParent = true;
+  }
+
+  // Also attempt direct Supabase save
+  try {
+    if (sbClient) {
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (session && session.user) {
+        const { error } = await sbClient
+          .from("predicted_results")
+          .upsert({
+            user_id: session.user.id,
+            result_data: payload,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "user_id" });
+
+        if (!error) {
+          showStatus("✓ Saved to Supabase", true);
+          return;
+        } else {
+          console.error("Supabase upsert error:", error);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Direct save error:", err);
+  }
+
+  if (!notifiedParent) {
+    showStatus("✓ Saved locally", true);
+  }
+}
+
+document.getElementById("save").onclick = handleSave;
+
+document.getElementById("reset").onclick = async () => {
+  if (confirm("Reset all entered marks and saved details?")) {
+    localStorage.removeItem("semester5EditableResult");
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "RESET_RESULT_DATA" }, "*");
+    }
+    try {
+      if (sbClient) {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session && session.user) {
+          await sbClient.from("predicted_results").delete().eq("user_id", session.user.id);
+        }
+      }
+    } catch (e) {}
+    location.reload();
+  }
+};
+
+document.getElementById("backBtn").onclick = () => {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "NAVIGATE_HOME" }, "*");
+  } else {
+    window.location.href = "/";
+  }
+};
+
+loadResultData();
+</script>
+</body>
+</html>
