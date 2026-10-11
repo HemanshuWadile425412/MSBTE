@@ -1,4 +1,4 @@
-const CACHE_NAME = 'msbte-pwa-v1';
+const CACHE_NAME = 'msbte-pwa-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -6,7 +6,8 @@ const STATIC_ASSETS = [
   '/favicon.svg',
   '/pwa-192.png',
   '/pwa-512.png',
-  '/pwa-icon.svg'
+  '/pwa-icon.svg',
+  '/semester5_editable_result_calculator.html'
 ];
 
 self.addEventListener('install', (event) => {
