@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/useAuth';
 import { useTheme } from '../context/useTheme';
-import { BookOpen, Search, Sun, Moon, LogOut, ChevronRight, Smartphone } from 'lucide-react';
+import {
+  BookOpen,
+  Search,
+  Sun,
+  Moon,
+  LogOut,
+  ChevronRight,
+  Smartphone,
+  Award,
+  CheckCircle2,
+} from 'lucide-react';
 import type { Subject, Chapter, Topic, ViewMode } from '../types';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -17,6 +27,8 @@ interface NavbarProps {
   onNavigateHome: () => void;
   onNavigateSubject: (subjectId: string) => void;
   onNavigateChapter: (subjectId: string, chapterId: string) => void;
+  onNavigatePredictedResult?: () => void;
+  onNavigateProgressTracker?: () => void;
   onOpenSearch: () => void;
 }
 
@@ -28,6 +40,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateHome,
   onNavigateSubject,
   onNavigateChapter,
+  onNavigatePredictedResult,
+  onNavigateProgressTracker,
   onOpenSearch,
 }) => {
   const { user, signOut } = useAuth();
@@ -137,12 +151,65 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </>
               )}
+
+              {currentView.type === 'predicted-result' && (
+                <>
+                  <ChevronRight className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1">
+                    <Award className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Predicted Result</span>
+                  </span>
+                </>
+              )}
+
+              {currentView.type === 'progress-tracker' && (
+                <>
+                  <ChevronRight className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>See Your Progress</span>
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>
 
         {/* Right: Search, Theme Toggle, User, Sign Out */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Quick links on desktop */}
+          {onNavigatePredictedResult && (
+            <button
+              type="button"
+              onClick={onNavigatePredictedResult}
+              className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer border ${
+                currentView.type === 'predicted-result'
+                  ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold'
+                  : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-850'
+              }`}
+              title="Semester 5 Predicted Statement of Marks"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-500" />
+              <span>Predicted Result</span>
+            </button>
+          )}
+
+          {onNavigateProgressTracker && (
+            <button
+              type="button"
+              onClick={onNavigateProgressTracker}
+              className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer border ${
+                currentView.type === 'progress-tracker'
+                  ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold'
+                  : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-850'
+              }`}
+              title="Chapter Completion Progress Tracker"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Progress</span>
+            </button>
+          )}
+
           {/* Install App button (PWA) */}
           {!isInstalled && installPrompt && (
             <button

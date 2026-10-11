@@ -9,6 +9,8 @@ import {
   Edit2,
   Trash2,
   Layers,
+  Award,
+  CheckCircle2,
 } from 'lucide-react';
 import { SubjectModal } from './SubjectModal';
 import { ConfirmModal } from './ConfirmModal';
@@ -20,6 +22,8 @@ interface SubjectsListProps {
   onUpdateSubject: (id: string, data: { name: string; subject_code?: string }) => Promise<void>;
   onDeleteSubject: (id: string) => Promise<void>;
   onOpenGlobalSearch: () => void;
+  onOpenPredictedResult: () => void;
+  onOpenProgressTracker: () => void;
 }
 
 export const SubjectsList: React.FC<SubjectsListProps> = ({
@@ -29,6 +33,8 @@ export const SubjectsList: React.FC<SubjectsListProps> = ({
   onUpdateSubject,
   onDeleteSubject,
   onOpenGlobalSearch,
+  onOpenPredictedResult,
+  onOpenProgressTracker,
 }) => {
   const [filterQuery, setFilterQuery] = useState('');
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -70,7 +76,29 @@ export const SubjectsList: React.FC<SubjectsListProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Predicted Result Button */}
+          <button
+            type="button"
+            onClick={onOpenPredictedResult}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-850 text-neutral-800 dark:text-neutral-200 text-xs font-medium transition-colors cursor-pointer shadow-2xs"
+            title="Open Semester V Predicted Statement of Marks"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <span>Predicted Result</span>
+          </button>
+
+          {/* See Your Progress Button */}
+          <button
+            type="button"
+            onClick={onOpenProgressTracker}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-850 text-neutral-800 dark:text-neutral-200 text-xs font-medium transition-colors cursor-pointer shadow-2xs"
+            title="Open Chapter Completion Progress Tracker"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <span>See Your Progress</span>
+          </button>
+
           {/* Quick Search Trigger */}
           <button
             type="button"
@@ -79,8 +107,8 @@ export const SubjectsList: React.FC<SubjectsListProps> = ({
             title="Global Search (Ctrl+K)"
           >
             <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Search syllabus...</span>
-            <kbd className="hidden sm:inline font-mono text-[10px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 px-1 rounded">
+            <span className="hidden sm:inline">Search...</span>
+            <kbd className="hidden md:inline font-mono text-[10px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 px-1 rounded">
               Ctrl+K
             </kbd>
           </button>

@@ -75,7 +75,9 @@ export type ViewMode =
   | { type: 'subjects' }
   | { type: 'subject-detail'; subjectId: string }
   | { type: 'chapter-detail'; subjectId: string; chapterId: string }
-  | { type: 'topic-detail'; subjectId: string; chapterId: string; topicId: string };
+  | { type: 'topic-detail'; subjectId: string; chapterId: string; topicId: string }
+  | { type: 'predicted-result' }
+  | { type: 'progress-tracker' };
 
 export interface SearchResultItem {
   id: string;
@@ -88,3 +90,50 @@ export interface SearchResultItem {
   snippet?: string;
   matchField?: string;
 }
+
+export interface AssessmentHead {
+  name: string; // e.g. 'TH-ESE', 'TH-PA', 'PR-ESE', 'PR-PA'
+  title: string; // e.g. 'End Sem Theory', 'Progressive Theory'
+  maxMarks: number;
+  minMarks: number;
+  obtainedMarks: number | null;
+}
+
+export interface SubjectMarksheetData {
+  code: string;
+  abbr: string;
+  name: string;
+  isElective?: boolean;
+  heads: AssessmentHead[];
+  totalMax: number;
+  totalObtained: number;
+  isPassed: boolean;
+}
+
+export interface PredictedResult {
+  id?: string;
+  user_id: string;
+  student_name: string;
+  enrollment_no: string;
+  seat_no: string;
+  exam_session: string;
+  course_semester: string;
+  elective_code: string; // '315321' | '315325' | '315326'
+  subjects_data: SubjectMarksheetData[];
+  overall_max: number;
+  overall_obtained: number;
+  percentage: number;
+  result_class: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ChapterProgressItem {
+  id?: string;
+  user_id: string;
+  subject_code: 'OSY' | 'STE' | 'DAN';
+  chapter_number: number; // 1 to 6
+  is_completed: boolean;
+  updated_at?: string;
+}
+

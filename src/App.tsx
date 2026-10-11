@@ -10,6 +10,8 @@ import { SubjectDetail } from './components/SubjectDetail';
 import { ChapterDetail } from './components/ChapterDetail';
 import { TopicDetail } from './components/TopicDetail';
 import { SearchModal } from './components/SearchModal';
+import { PredictedResultView } from './components/PredictedResultView';
+import { ChapterProgressView } from './components/ChapterProgressView';
 import { Loader2 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -91,12 +93,12 @@ export const App: React.FC = () => {
   }, [subjects, chapters]);
 
   const selectedSubject = useMemo(() => {
-    if (view.type === 'subjects') return null;
+    if (view.type === 'subjects' || view.type === 'predicted-result' || view.type === 'progress-tracker') return null;
     return enrichedSubjects.find((s) => s.id === view.subjectId) || null;
   }, [enrichedSubjects, view]);
 
   const currentSubjectChapters = useMemo(() => {
-    if (view.type === 'subjects' || !view.subjectId) return [];
+    if (view.type === 'subjects' || view.type === 'predicted-result' || view.type === 'progress-tracker' || !view.subjectId) return [];
     return chapters
       .filter((c) => c.subject_id === view.subjectId)
       .map((c) => ({
@@ -124,11 +126,16 @@ export const App: React.FC = () => {
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get('view');
       const subjectId = params.get('subject');
       const chapterId = params.get('chapter');
       const topicId = params.get('topic');
 
-      if (topicId && chapterId && subjectId) {
+      if (viewParam === 'predicted-result') {
+        setView({ type: 'predicted-result' });
+      } else if (viewParam === 'progress-tracker') {
+        setView({ type: 'progress-tracker' });
+      } else if (topicId && chapterId && subjectId) {
         setView({ type: 'topic-detail', subjectId, chapterId, topicId });
       } else if (chapterId && subjectId) {
         setView({ type: 'chapter-detail', subjectId, chapterId });
@@ -149,7 +156,11 @@ export const App: React.FC = () => {
     const url = new URL(window.location.href);
     url.search = '';
 
-    if (newView.type === 'subject-detail') {
+    if (newView.type === 'predicted-result') {
+      url.searchParams.set('view', 'predicted-result');
+    } else if (newView.type === 'progress-tracker') {
+      url.searchParams.set('view', 'progress-tracker');
+    } else if (newView.type === 'subject-detail') {
       url.searchParams.set('subject', newView.subjectId);
     } else if (newView.type === 'chapter-detail') {
       url.searchParams.set('subject', newView.subjectId);
@@ -484,6 +495,8 @@ export const App: React.FC = () => {
         onNavigateChapter={(subjectId, chapterId) =>
           navigateTo({ type: 'chapter-detail', subjectId, chapterId })
         }
+        onNavigatePredictedResult={() => navigateTo({ type: 'predicted-result' })}
+        onNavigateProgressTracker={() => navigateTo({ type: 'progress-tracker' })}
         onOpenSearch={() => setIsSearchOpen(true)}
       />
 
@@ -497,6 +510,20 @@ export const App: React.FC = () => {
             onUpdateSubject={handleUpdateSubject}
             onDeleteSubject={handleDeleteSubject}
             onOpenGlobalSearch={() => setIsSearchOpen(true)}
+            onOpenPredictedResult={() => navigateTo({ type: 'predicted-result' })}
+            onOpenProgressTracker={() => navigateTo({ type: 'progress-tracker' })}
+          />
+        ) : view.type === 'predicted-result' ? (
+          <PredictedResultView
+            userId={user.id}
+            onBack={() => navigateTo({ type: 'subjects' })}
+            showToast={showToast}
+          />
+        ) : view.type === 'progress-tracker' ? (
+          <ChapterProgressView
+            userId={user.id}
+            onBack={() => navigateTo({ type: 'subjects' })}
+            showToast={showToast}
           />
         ) : view.type === 'subject-detail' && selectedSubject ? (
           <SubjectDetail
