@@ -10,7 +10,7 @@ import { SubjectDetail } from './components/SubjectDetail';
 import { ChapterDetail } from './components/ChapterDetail';
 import { TopicDetail } from './components/TopicDetail';
 import { SearchModal } from './components/SearchModal';
-import { PredictedResultView } from './components/PredictedResultView';
+import PredictedResult from './components/PredictedResult';
 import { ChapterProgressView } from './components/ChapterProgressView';
 import { Loader2 } from 'lucide-react';
 
@@ -514,10 +514,8 @@ export const App: React.FC = () => {
             onOpenProgressTracker={() => navigateTo({ type: 'progress-tracker' })}
           />
         ) : view.type === 'predicted-result' ? (
-          <PredictedResultView
-            userId={user.id}
+          <PredictedResult
             onBack={() => navigateTo({ type: 'subjects' })}
-            showToast={showToast}
           />
         ) : view.type === 'progress-tracker' ? (
           <ChapterProgressView
